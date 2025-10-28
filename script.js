@@ -59,9 +59,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const netBalance = totalIncome - totalExpense;
 
        
-        totalIncomeEl.textContent = `$${totalIncome.toFixed(2)}`;
-        totalExpenseEl.textContent = `$${totalExpense.toFixed(2)}`;
-        netBalanceEl.textContent = `$${netBalance.toFixed(2)}`;
+        totalIncomeEl.textContent = `₹${totalIncome.toFixed(2)}`;
+        totalExpenseEl.textContent = `₹${totalExpense.toFixed(2)}`;
+        netBalanceEl.textContent = `₹${netBalance.toFixed(2)}`;
 
         netBalanceEl.classList.remove('positive', 'negative');
         if (netBalance > 0) {
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         item.innerHTML = `
             <span>${description}</span>
-            <span>$${amount.toFixed(2)}</span>
+            <span>₹${amount.toFixed(2)}</span>
             <div class="btn-container">
                 <button class="edit-btn" data-id="${id}">Edit</button>
                 <button class="delete-btn" data-id="${id}">Delete</button>
@@ -176,6 +176,34 @@ document.addEventListener('DOMContentLoaded', () => {
         if (description === '' || isNaN(amount) || amount <= 0) {
             alert('Please enter a valid description and amount.');
             return;
+        }
+
+        if (type === 'Expense') {
+            const totalIncome = transactions
+                .filter(tx => tx.type === 'Income')
+                .reduce((acc, tx) => acc + tx.amount, 0);
+
+            const totalExpense = transactions
+                .filter(tx => tx.type === 'Expense')
+                .reduce((acc, tx) => acc + tx.amount, 0);
+
+            let availableBalance = totalIncome - totalExpense;
+
+            if (isEditing) {
+                const originalTransaction = transactions.find(tx => tx.id === id);
+                if (originalTransaction) {
+                    if (originalTransaction.type === 'Income') {
+                        availableBalance -= originalTransaction.amount;
+                    } else {
+                        availableBalance += originalTransaction.amount;
+                    }
+                }
+            }
+
+            if (amount > availableBalance) {
+                alert(`Insufficient balance. You cannot spend more than your available balance of ₹${availableBalance.toFixed(2)}.`);
+                return;
+            }
         }
 
         if (isEditing) {
